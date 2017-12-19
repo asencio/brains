@@ -1,0 +1,194 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - WebApplication1</title>
+
+    <environment include="Development">
+        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
+        <link rel="stylesheet" href="~/css/site.css" />
+    </environment>
+    <environment exclude="Development">
+        <link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/css/bootstrap.min.css"
+              asp-fallback-href="~/lib/bootstrap/dist/css/bootstrap.min.css"
+              asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute" />
+        <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
+    </environment>
+</head>
+<body>
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand">WebApplication1</a>
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li><a asp-area="" asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li><a asp-area="" asp-controller="Home" asp-action="About">About</a></li>
+                    <li><a asp-area="" asp-controller="Home" asp-action="Contact">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container body-content">
+        @RenderBody()
+        <hr />
+        <footer>
+            <p>&copy; 2017 - WebApplication1</p>
+        </footer>
+    </div>
+
+    <environment include="Development">
+        <script src="~/lib/jquery/dist/jquery.js"></script>
+        <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
+        <script src="~/js/site.js" asp-append-version="true"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-2.2.0.min.js"
+                asp-fallback-src="~/lib/jquery/dist/jquery.min.js"
+                asp-fallback-test="window.jQuery"
+                crossorigin="anonymous"
+                integrity="sha384-K+ctZQ+LL8q6tP7I94W+qzQsfRV2a+AfHIi9k8z8l9ggpc8X+Ytst4yBo/hH+8Fk">
+        </script>
+        <script src="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/bootstrap.min.js"
+                asp-fallback-src="~/lib/bootstrap/dist/js/bootstrap.min.js"
+                asp-fallback-test="window.jQuery && window.jQuery.fn && window.jQuery.fn.modal"
+                crossorigin="anonymous"
+                integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa">
+        </script>
+        <script src="~/js/site.min.js" asp-append-version="true"></script>
+    </environment>
+    <script>
+        var personsData = 'http://assignment.siteimprove.com/api/persons';
+        var personDetails = 'http://assignment.siteimprove.com/api/persondetails/';
+        var personNumber;
+        var parentElement;
+        var buttonId;
+        var parentTr;
+
+        $(document).ready(function () {
+            // Send an AJAX request for parents
+            $.getJSON(personsData)
+                .done(function (data) {
+                    // On success, 'data' contains a list of people.
+                    $.each(data, function (key, item) {
+                        // Add a list of people.
+                        $('<li>', { text: formatItem(item) }).appendTo($('#peopleList'));
+
+                        var id = item.Id;
+                        var name = item.Name;
+                        var yOb = item.YearOfBirth;
+                        var numCh = item.NumChildren
+                        var prof = item.Profession
+                        var buttonId = 'button' + id;
+                        var markup = "<tr><td>" + name + "</td><td>" + yOb + "</td><td><button id=" + buttonId + " > " + numCh + "</button></td><td>" + prof + "</td></tr>";
+
+                        //$('button').attr('id', buttonId);
+
+                        //Render main table
+                        $("table tbody").append(markup);
+                        console.log('itemId: ' + item.Id);
+                        console.log('buttonId: ' + buttonId);
+                    });
+                });
+            //$("#people").on("click", "button", function () { 
+            //    console.log('clicked: ' + $(this).attr('id') );
+            //});
+            //$(staticAncestors).on(eventName, dynamicChild, function () { });
+
+            //$('#button4').click(function () {
+            //    console.log('clicked');
+            //});
+        });
+
+        function formatItem(item) {
+            return item.Name;
+        }
+
+        $("#people").on("click", "button", function () {
+            $("#childrenTable").remove();
+            //console.log('clicked: ' + $(this).attr('id'));
+            personNumber = $(this).attr('id').slice(-1);
+            buttonId = $(this).attr('id');
+            parentElement = $("#" + buttonId).parent();
+            parentTr = $("#" + buttonId).parents('tr');
+            console.log('personNumber: ' + personNumber);
+            console.log('buttonId: ' + buttonId);
+            console.log('parentElement: ' + parentElement);
+            console.log('parentTr: ' + parentTr);
+            $.getJSON(personDetails + personNumber)
+                .done(function (dataChildren) {
+                    console.log('dataChildrenLength: ' + dataChildren.length);
+                    if(dataChildren.length > 0) {
+                        var childrenTableHeaderMarkup = '<table class="table table-bordered" id="childrenTable"><thead><tr><th>Name</th><th>Year of birth</th><th>Mother</th></tr></thead><tbody id="children"></tbody></table>';
+                        parentTr.after(childrenTableHeaderMarkup);
+                        //parentElement.append(childrenTableHeaderMarkup);
+                        //$("#childrenTable").append(childrenTableHeaderMarkup);
+                        //$("td button").append(childrenTableHeaderMarkup);
+                        console.log(dataChildren);
+                        $.each(dataChildren, function (key, itemChildren) {
+                            var childName = itemChildren.Name;
+                            var childYOB = itemChildren.YearOfBirth;
+                            var childMother = itemChildren.Mother;
+                            var childMarkup = "<tr><td>" + childName + "</td><td>" + childYOB + "</td><td>" + childMother + "</td></tr>";
+                            $("#children").append(childMarkup);
+                        });
+                    }
+                });
+        });
+       
+    </script>
+    <script>
+        var personsData = 'http://assignment.siteimprove.com/api/persons';
+        var personDetails = 'http://assignment.siteimprove.com/api/persondetails/';
+        
+        $(document).ready(function () {
+            $('button').click(function (event) {
+                console.log('buttonId: ' + event.target.id);
+
+            });
+            // Send an AJAX request for parents
+            //$.getJSON(personsData)
+            //    .done(function (data) {
+            //        var children = [];
+            //        // On success, 'data' contains a list of people.
+            //        $.each(data, function (key, item) {
+            //            var parents = item.Id;
+            //            var numCh = item.NumChildren;
+            //            console.log('parentId: ' + parents);
+            //            console.log('Number of children: ' + item.NumChildren);
+
+            //            //Send and AJAX request for children
+            //            //Check children
+            //            if (numCh > 0) {
+            //                console.log('numCh: ' + numCh);
+            //                $.getJSON(personDetails + item.Id)
+            //                    .done(function (dataChildren) {
+            //                        //var childrenTableHeaderMarkup = '<table class="table table-bordered"><thead><tr><th>Name</th><th>Year of birth</th><th>Mother</th></tr></thead><tbody id="children"></tbody></table>';
+            //                        //$("td button").append(childrenTableHeaderMarkup);
+            //                        console.log(dataChildren);
+            //                        //$.each(dataChildren, function (key, itemChildren) {
+            //                        //    var childName = itemChildren.Name;
+            //                        //    var childYOB = itemChildren.YearOfBirth;
+            //                        //    var childMother = itemChildren.Mother;
+            //                        //    var childMarkup = "<tr><td>" + childName + "</td><td>" + childYOB + "</td><td>" + childMother + "</td></tr>";
+
+            //                        //    $("#children").append(childMarkup);
+            //                        //});
+            //                    });
+            //            }
+            //        });
+            //    });
+        });
+    </script>
+
+    @RenderSection("Scripts", required: false)
+</body>
+</html>
